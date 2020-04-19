@@ -3,7 +3,7 @@
 
 #include <type_traits>
 #include <cstdlib>
-
+#include <new>
 
 template <class T>
 struct Vector {
@@ -14,8 +14,9 @@ private:
 public:
 //-----------------------------------------------
     Vector ();
-    Vector (const T& value);
+    Vector (size_t size_alloc);
     Vector (const Vector& that);
+    Vector (Vector&& that);
     ~Vector ();
 
 //-----------------------------------------------
@@ -36,6 +37,7 @@ public:
 private:
     T* data_;
     size_t size_;
+    size_t max_size_;
     size_t capacity_;
     size_t number_of_first_element_;
 
@@ -46,7 +48,7 @@ private:
 };
 
 
-void* operator new (size_t, void* place) {return (void*) place; };
+//void* operator new (size_t, void* place) { printf ("NEW "); return (void*) place; };
 
 //-------------------------------//
 #include "TemplateFunction.h"

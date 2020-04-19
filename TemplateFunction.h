@@ -1,6 +1,11 @@
 #ifndef TEMPLATEFUNCTION_H_INCLUDED
 #define TEMPLATEFUNCTION_H_INCLUDED
 
+#define CHECK_CALLOC if (data_ == nullptr) \
+    { \
+        printf ("ERROR in calloc!\n");\
+        exit (1); \
+    }
 
 
 //-------------------start of constructor and destructor------------------
@@ -10,16 +15,18 @@ Vector<T>::Vector ():
     data_ ( (T*) calloc (DEFAULT_CAPACITY, sizeof (T)) ),
     size_ (0),
     capacity_ (DEFAULT_CAPACITY)
-{}
+{
+    CHECK_CALLOC
+}
 
 
 template <class T>
-Vector<T>::Vector (const T& value):
-    data_ ( (T*) calloc (DEFAULT_CAPACITY, sizeof (T)) ),
+Vector<T>::Vector (size_t size_alloc):
+    data_ ( (T*) calloc (size_alloc, sizeof (T)) ),
     size_ (0),
-    capacity_ (DEFAULT_CAPACITY)
+    capacity_ (size_alloc)
 {
-    this->push_back(value);
+    CHECK_CALLOC
 }
 
 template <class T>
@@ -33,13 +40,20 @@ Vector<T>::Vector (const Vector& that):
     }
 }
 
+template <class T>
+Vector<T>::Vector (Vector&& that):
+    data_ (std::move (that.data_)),
+    size_ (std::move (that.size_)),
+    capacity_ (std::move (that.capacity_))
+{}
 
 template <class T>
 Vector<T>::~Vector () {
     for (size_t i = 0; i < size_; i++) {
         data_[i].~T();
     }
-    free (data_);
+    if (data_)
+        free (data_);
 }
 
 //---------------------end of constructor and destructor------------------
@@ -50,7 +64,6 @@ void Vector<T>::autoIncreaseLength () {
     if (size_ >= capacity_) {
         T* temp_point = (T*) realloc ((void*) data_, capacity_ * INCREASE_FACTOR * sizeof (T));
         if (temp_point != nullptr) {
-                printf ("----");
             data_ = temp_point;
             capacity_ *= INCREASE_FACTOR;
         }
@@ -67,7 +80,6 @@ void Vector<T>::push_back (const T& value) {
     autoIncreaseLength ();
     if (std::is_class<T>::value == true)
         new ((void*)(data_ + size_)) T;
-//        std::allocator<T>::construct ((data_ + size_), &temp);
     data_[size_] = value;
     size_++;
 }

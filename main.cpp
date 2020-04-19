@@ -12,10 +12,10 @@ int main() {
     cat temp_cat;
     Vector<cat> test_cat;
     test_cat.push_back (temp_cat);
-    printf ("Capacity: %llu Size: %llu\n", test_cat.capacity(), test_cat.size());
 
 
     Vector<int> a (1), b(2);
+    a.dumpInt();
     a.push_back (6);
     a.push_back (6);
     a.push_back (6);
@@ -34,5 +34,8 @@ int main() {
     d = a;
     printf ("print: %d\n", c.at(0));
     d.dumpInt();
+
+    Vector<int> e(10);
+    e.dumpInt();
     return 0;
 }
