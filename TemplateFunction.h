@@ -12,21 +12,26 @@
 
 template <class T>
 Vector<T>::Vector ():
-    data_ ( (T*) calloc (DEFAULT_CAPACITY, sizeof (T)) ),
+    data_ (0),
     size_ (0),
-    capacity_ (DEFAULT_CAPACITY)
+    capacity_ (0)
 {
-    CHECK_CALLOC
+    Vector<T> temp(1);
+
+    std::swap (temp.size_, this->size_);
+    std::swap (temp.capacity_, this->capacity_);
+    std::swap (temp.data_, this->data_);
 }
 
 
 template <class T>
-Vector<T>::Vector (size_t size_alloc):
-    data_ ( (T*) calloc (size_alloc, sizeof (T)) ),
-    size_ (0),
-    capacity_ (size_alloc)
+Vector<T>::Vector (size_t size_default_alloc):
+    data_ ( (T*) calloc (size_default_alloc, sizeof (T)) ),
+    size_ (size_default_alloc),
+    capacity_ (size_default_alloc)
 {
     CHECK_CALLOC
+    autoCallConstructor (data_, size_);
 }
 
 template <class T>
@@ -35,6 +40,9 @@ Vector<T>::Vector (const Vector& that):
     size_ (that.size_),
     capacity_ (that.capacity_)
 {
+    CHECK_CALLOC
+    autoCallConstructor (data_, size_);
+
     for (size_t i = 0; i < size_; i++) {
         this->data_[i] = that.data_[i];
     }
@@ -42,18 +50,28 @@ Vector<T>::Vector (const Vector& that):
 
 template <class T>
 Vector<T>::Vector (Vector&& that):
-    data_ (std::move (that.data_)),
-    size_ (std::move (that.size_)),
-    capacity_ (std::move (that.capacity_))
-{}
+    data_ (0),
+    size_ (0),
+    capacity_ (0)
+{
+    if (&that != this) {
+        std::swap (that.data_, this->data_);
+        std::swap (that.size_, this->size_);
+        std::swap (that.capacity_, this->capacity_);
+    }
+}
 
 template <class T>
 Vector<T>::~Vector () {
     for (size_t i = 0; i < size_; i++) {
-        data_[i].~T();
+        if (std::is_class<T>::value == true) {
+            data_[i].~T();
+        }
     }
-    if (data_)
+    if (data_) {
         free (data_);
+        data_ = 0;
+    }
 }
 
 //---------------------end of constructor and destructor------------------
@@ -78,8 +96,13 @@ void Vector<T>::autoIncreaseLength () {
 template <class T>
 void Vector<T>::push_back (const T& value) {
     autoIncreaseLength ();
-    if (std::is_class<T>::value == true)
-        new ((void*)(data_ + size_)) T;
+//    if (std::is_class<T>::value == true) {
+//        printf ("is_class push_back\n");
+//        new ((void*)(data_ + size_)) T;
+//    }
+
+    autoCallConstructor (data_, 1);
+
     data_[size_] = value;
     size_++;
 }
@@ -89,7 +112,7 @@ template <class T>
 T Vector<T>::pop_back () {
     if (size_ <= 0) {
         printf ("Vector is empty!\n");
-        return 0;
+        return;
     }
     else {
         return data_[--size_];
@@ -149,5 +172,23 @@ void Vector<T>::freeMemoryData () {
     size_ = 0;
     capacity_ = 0;
     free (data_);
+}
+
+template <class T>
+void Vector<T>::autoCallConstructor (T* pointer, size_t num_objects) {
+    if (pointer == 0) {
+        printf ("Error in autoCallConstructor: bad pointer!\n");
+        return;
+    }
+    if (num_objects == 0) {
+        printf ("Error in autoCallConstructor: bad number of objects!\n");
+        return;
+    }
+
+    if (std::is_class<T>::value == true) {
+        for (size_t i = 0; i < num_objects; i++) {
+            new ((void*)(pointer + i)) T;
+        }
+    }
 }
 #endif // TEMPLATEFUNCTION_H_INCLUDED

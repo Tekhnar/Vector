@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <cstdlib>
 #include <new>
+#include <algorithm>
 
 template <class T>
 struct Vector {
@@ -14,7 +15,7 @@ private:
 public:
 //-----------------------------------------------
     Vector ();
-    Vector (size_t size_alloc);
+    Vector (size_t size_default_alloc);
     Vector (const Vector& that);
     Vector (Vector&& that);
     ~Vector ();
@@ -41,6 +42,7 @@ private:
     size_t capacity_;
     size_t number_of_first_element_;
 
+    void autoCallConstructor (T* pointer, size_t num_objects);
 
     void autoIncreaseLength ();
     void freeMemoryData ();
