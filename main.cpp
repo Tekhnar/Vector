@@ -27,6 +27,8 @@ int main() {
     a.push_back (6);
     a.push_back (6);
 
+    a.pop_back();
+
     Vector<int> c = a;
 
     Vector<int> d = 7;
